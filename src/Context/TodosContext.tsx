@@ -21,7 +21,14 @@ export type TodosListAndActions = {
 export const todosContext = createContext<TodosListAndActions | null>(null);
 
 const TodosContext = ({ children }: Children) => {
-  const [allTodos, setAllTodos] = useState<Todo[]>();
+  const [allTodos, setAllTodos] = useState<Todo[]>(() => {
+    try {
+      const newTodos = localStorage.getItem("todos") || "[]";
+      return JSON.parse(newTodos) as Todo[];
+    } catch (error) {
+      return [];
+    }
+  });
 
   const handleAddTodo = (task: string) => {
     setAllTodos((prev) => {
@@ -34,7 +41,7 @@ const TodosContext = ({ children }: Children) => {
         },
         ...(prev ?? []),
       ];
-      //   localStorage.setItem("todos", JSON.stringify(newTodos));
+      localStorage.setItem("todos", JSON.stringify(newTodos));
       return newTodos;
     });
   };
@@ -47,12 +54,14 @@ const TodosContext = ({ children }: Children) => {
         }
         return todo;
       });
+      localStorage.setItem("todos", JSON.stringify(newTodos));
       return newTodos;
     });
   };
 
   const handleDeleteTodo = (id: string) => {
     const updatedTodos = allTodos?.filter((todo) => todo.id !== id);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
     setAllTodos(updatedTodos);
   };
 
